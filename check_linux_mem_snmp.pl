@@ -130,8 +130,7 @@ if ($warn =~ /\%$/o || $crit =~ /\%$/o) {
              'OK';
 }
 
-print "$state : ",
-    "Memory at ${percent_used}% with $free_mem of $total_mem_mb MB free\n";
+print "$state: Memory at ${percent_used}% with $free_mem of $total_mem_mb MB free\n";
 
 exit $ERRORS{$state};
 
@@ -182,6 +181,6 @@ sub print_help {
 # Exit with status "UNKNOWN" if something goes wrong
 sub croak {
     my $message = shift;
-    print "SNMP UNKNOWN - $message\n";
+    print "UNKNOWN: $message\n";
     exit $ERRORS{'UNKNOWN'};
 }
