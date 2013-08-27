@@ -2,7 +2,7 @@
 #
 # File: check_linux_mem_snmp
 # Author: Adam Portier <ajportier@gmail.com>
-# Date: 08/26/2013 (Version 1)
+# Date: 08/27/2013 (Version 1.1)
 #
 # Uses the values reported by the HOST-RESOURCES-MIB::hrStorage MIB to
 # calculate the "real" memory available to a Linux host; i.e. the memory that
@@ -35,7 +35,7 @@ use Getopt::Long;
 use Net::SNMP;
 
 ##### CONFIGURATION AND VARIABLES #####
-$VERSION  = '1.0';
+$VERSION  = '1.1';
 $PROGNAME = 'check_linux_mem_snmp';
 my $OID_BASE = '.1.3.6.1.2.1.25.2.3.1';
 my $TOTAL_INDEX = '1';
@@ -113,8 +113,9 @@ foreach my $index ($TOTAL_INDEX,$BUFFER_INDEX,$CACHED_INDEX){
 
 # Crude rounding to avoid POSIX / Math modules
 my $percent_used = sprintf("%0.0f",(($used_mem / $total_mem) * 100));
-my $free_mem = sprintf("%0.0f",($total_mem - $used_mem)/1024);
+my $free_mem_mb = sprintf("%0.0f",($total_mem - $used_mem)/1024);
 my $total_mem_mb = sprintf("%0.0f",$total_mem / 1024);
+my $free_mem_b = sprintf("%0.0f",($total_mem - $used_mem)*1024);
 
 # If operating in percents, calculate state based off percent used
 if ($warn =~ /\%$/o || $crit =~ /\%$/o) {
@@ -125,12 +126,15 @@ if ($warn =~ /\%$/o || $crit =~ /\%$/o) {
              'OK';
 # Otherwise, caclulate state based off total free (in MB)
 } else {
-    $state = $free_mem <= $crit ? 'CRITICAL' :
-             $free_mem <= $warn ? 'WARNING' :
+    $state = $free_mem_mb <= $crit ? 'CRITICAL' :
+             $free_mem_mb <= $warn ? 'WARNING' :
              'OK';
 }
 
-print "$state: Memory at ${percent_used}% with $free_mem of $total_mem_mb MB free\n";
+print "$state: Memory at ${percent_used}% ",
+    "with $free_mem_mb of $total_mem_mb MB free",
+    " | 'percent used'=${percent_used}%",
+    " 'free'=${free_mem_b}B\n";
 
 exit $ERRORS{$state};
 
